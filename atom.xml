@@ -1,26 +1,52 @@
----
-layout: nil
----
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
  
- <title>{{ site.name }}</title>
- <link href="{{ site.url }}/atom.xml" rel="self"/>
- <link href="{{ site.url }}/"/>
- <updated>{{ site.time | date_to_xmlschema }}</updated>
- <id>{{ site.url }}</id>
+ <title>Neural Networks, Deep Learning and Julia</title>
+ <link href="http://bachase.github.io/nnadl-julia//atom.xml" rel="self"/>
+ <link href="http://bachase.github.io/nnadl-julia//"/>
+ <updated>2013-12-07T17:17:54-06:00</updated>
+ <id>http://bachase.github.io/nnadl-julia/</id>
  <author>
-   <name>{{ site.name }}</name>
+   <name>Neural Networks, Deep Learning and Julia</name>
  </author>
  
- {% for post in site.posts %}
+ 
  <entry>
-   <title>{{ post.title }}</title>
-   <link href="{{ site.url }}{{ post.url }}"/>
-   <updated>{{ post.date | date_to_xmlschema }}</updated>
-   <id>{{ site.url }}{{ post.id }}</id>
-   <content type="html">{{ post.content | xml_escape }}</content>
+   <title>Deriving the Back-Propagation Algorithm</title>
+   <link href="http://bachase.github.io/nnadl-julia//posts/backprop"/>
+   <updated>2013-12-07T00:00:00-06:00</updated>
+   <id>http://bachase.github.io/nnadl-julia//posts/backprop</id>
+   <content type="html">&lt;p&gt;Chapter 1 of &lt;a href=&quot;http://neuralnetworksanddeeplearning.com/&quot;&gt;Neural Networks and Deep Learning&lt;/a&gt; presents a basic logistic network for classifying images of handwritten digits.  Although  the description of the back-propagation algorithm will be coming in the next chapter, I want to go through the experience of deriving it myself rather than just translating the provided python code to julia.  What follows is also inspired by the &lt;a href=&quot;http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial&quot;&gt;UFDL Deep Learning Tutorial&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;notation&quot;&gt;Notation&lt;/h3&gt;
+&lt;p&gt;Let’s begin with notation for a multi-layer neural network.  What follows is slightly different than both references linked above, but I find it much clearer.&lt;/p&gt;
+
+&lt;p&gt;Let &lt;script type=&quot;math/tex&quot;&gt; x &lt;/script&gt; be the &lt;script type=&quot;math/tex&quot;&gt;(n-1)&lt;/script&gt;-dimensional input to the network. Rather than maintaining a separate bias &lt;script type=&quot;math/tex&quot;&gt; b &lt;/script&gt; for each neuron, extend the input space with an extra constant input &lt;script type=&quot;math/tex&quot;&gt; 1 &lt;/script&gt;. That is, the augmented input, or first layer activation, is given by the &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt;-dimensional vector 
+&lt;script type=&quot;math/tex&quot;&gt;% &lt;![CDATA[
+ a^{(1)} = \begin{bmatrix} x &amp; 1 \end{bmatrix}^T  %]]&gt;&lt;/script&gt;. &lt;/p&gt;
+
+&lt;p&gt;Likewise, if &lt;script type=&quot;math/tex&quot;&gt; \tilde{W^{(l)}}&lt;/script&gt; is the weight matrix for the &lt;script type=&quot;math/tex&quot;&gt;l&lt;/script&gt;-th layer of the network with bias &lt;script type=&quot;math/tex&quot;&gt; b^{(l)} &lt;/script&gt;, then 
+we define the extended weight matrix
+$$ W^{(l)} = \begin{bmatrix}
+  \tilde{W^{(l)}} &amp;amp; b \cr
+  0 &amp;amp; 1
+\end{bmatrix}$$&lt;/p&gt;
+
+&lt;p&gt;Thus the forward propagation equations are compactly given by&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
+ 
+\begin{align}
+z^{(l)} =&amp; W^{(l)}a^{(l)} \cr
+ a^{(l+1)} &amp;= \sigma( z^{(l)})
+\end{align} 
+ %]]&gt;&lt;/script&gt;
+
+&lt;h3 id=&quot;gradient-descent&quot;&gt;Gradient Descent&lt;/h3&gt;
+
+&lt;p&gt;To be continued…&lt;/p&gt;
+</content>
  </entry>
- {% endfor %}
+ 
  
 </feed>
