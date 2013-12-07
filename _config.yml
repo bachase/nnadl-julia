@@ -1,10 +1,10 @@
 markdown: kramdown
 pygments: true
 permalink: /posts/:title
+safe: true
+lsi: false
 
 name: Neural Networks, Deep Learning and Julia
 url: http://bachase.github.io/nnadl-julia/
 description: Learning Julia with some ML tasks
-#twitter: holman
 github: bachase
-#gravatar_url: http://gravatar.com/avatar/6f63cde8b16b035280ca615f621a6c8c
