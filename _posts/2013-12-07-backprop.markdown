@@ -1,0 +1,33 @@
+---
+layout: post
+title: Deriving the Back-Propagation Algorithm
+category: post
+---
+Chapter 1 of [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) presents a basic logistic network for classifying images of handwritten digits.  Although  the description of the back-propagation algorithm will be coming in the next chapter, I want to go through the experience of deriving it myself rather than just translating the provided python code to julia.  What follows is also inspired by the [UFDL Deep Learning Tutorial](http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial).
+
+### Notation
+Let's begin with notation for a multi-layer neural network.  What follows is slightly different than both references linked above, but I find it much clearer.
+
+Let $$ x $$ be the $$(n-1)$$-dimensional input to the network. Rather than maintaining a separate bias $$ b $$ for each neuron, extend the input space with an extra constant input $$ 1 $$. That is, the augmented input, or first layer activation, is given by the $$n$$-dimensional vector 
+$$ a^{(1)} = \begin{bmatrix} x & 1 \end{bmatrix}^T $$. 
+
+Likewise, if $$ \tilde{W^{(l)}}$$ is the weight matrix for the $$l$$-th layer of the network with bias $$ b^{(l)} $$, then 
+we define the extended weight matrix
+$$ W^{(l)} = \begin{bmatrix}
+  \tilde{W^{(l)}} & b \cr
+  0 & 1
+\end{bmatrix}$$
+
+
+Thus the forward propagation equations are compactly given by
+
+$$ 
+\begin{align}
+z^{(l)} =& W^{(l)}a^{(l)} \cr
+ a^{(l+1)} &= \sigma( z^{(l)})
+\end{align} 
+$$
+
+### Gradient Descent
+
+To be continued...
