@@ -6,7 +6,7 @@ category: post
 Chapter 1 of [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) presents a basic logistic network for classifying images of handwritten digits.  Although  the description of the back-propagation algorithm will be coming in the next chapter, I want to go through the experience of deriving it myself rather than just translating the provided python code to julia.  What follows is also inspired by the [UFDL Deep Learning Tutorial](http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial).
 
 ### Notation
-Let's begin with notation for a multi-layer neural network.  What follows is slightly different than both references linked above, but I find it much clearer.
+Let's begin with notation for a multi-layer neural network.  What follows is slightly different than both references linked above, but I find it much clearer. OOPS, need to fix this since $\sigma$ doesn't propagate constant one!!
 
 Let $$ x $$ be the $$(n-1)$$-dimensional input to the network. Rather than maintaining a separate bias $$ b $$ for each neuron, extend the input space with an extra constant input $$ 1 $$. That is, the augmented input, or first layer activation, is given by the $$n$$-dimensional vector 
 $$ a^{(1)} = \begin{bmatrix} x & 1 \end{bmatrix}^T $$. 
@@ -23,11 +23,49 @@ Thus the forward propagation equations are compactly given by
 
 $$ 
 \begin{align}
-z^{(l)} =& W^{(l)}a^{(l)} \cr
- a^{(l+1)} &= \sigma( z^{(l)})
+z^{(l+1)} =& W^{(l)}a^{(l)} \cr
+ a^{(l+1)} &= \sigma( z^{(l+1)})
 \end{align} 
 $$
 
-### Gradient Descent
+Let $$ y = n_W(x) $$ be the result of running the $L$-layer network with weight matrices $$W=\{W^{(1)},\ldots,W^{(L-1)}\}$$ on input $$x$$.
 
-To be continued...
+### Backpropagation
+
+In order train the network via gradient descent, we need to calculate the derivatives of the cost function with respect to the weights.  For a single training example with input $$x$$ and output $$y$$, we have the cost
+
+$$
+J(W,x,y) = \frac{1}{2}\lVert n_W(x) - y \rVert^2
+$$
+
+To calculate the gradient, $$ \frac{\partial J(W,x,y)}{\partial W^{(l)}_{ij}} $$, we can work backwards from the output layer $$L$$:
+
+$$ 
+\begin{align}
+\frac{\partial J(W,x,y)}{\partial W^{(l)}_{ij}} &= (n_W(x)_q - y_q) \frac{\partial n_W(x)_q}{\partial W^{(l)}_{ij}}\\
+&=(a^{(L)}_q - y_q)\frac{\partial a_q^{(L)}}{\partial W^{(l)}_{ij}}\\
+&=(a^{(L)}_q - y_q)\frac{\partial \sigma(z^{(L)}_q)}{\partial W^{(l)}_{ij}}\\
+&=(a^{(L)}_q - y_q)\sigma'(z^{(L)}_q)\frac{\partial z^{(L)}_q}{\partial W^{(l)}_{ij}}\\
+&=\epsilon_q^{(L)}\frac{\partial z^{(L)}_q}{\partial W^{(l)}_{ij}}\\
+&=\epsilon_q^{(L)}\frac{\partial (W^{(L-1)}_{qr}a_r^{(L-1)})}{\partial W^{(l)}_{ij}}\\
+&=\epsilon_i^{(L)}a_j^{(L-1)}\delta_{(l,L-1)} 
++ \epsilon_q^{(L)}W^{(L-1)}_{qr}\frac{\partial a_r^{(L-1)}}{\partial W^{(l)}_{ij}}
+\end{align}
+$$
+
+where the the first term in the sum is if the arbitrary $l$ we are considering is actually $L-1$ (there is an implicit sum over $q$ when I went to summation notation in the first equality).  The second term in the sum is the beginning of the recurrence if $l < L-1$.
+
+More compactly
+
+$$
+\begin{align}
+\frac{\partial J(W,x,y)}{\partial W^{(l)}_{ij}} &= a_j^{(l)}\epsilon_i^{(l+1)}\\
+\epsilon_i^{(l)} & = \epsilon_q^{(l+1)}W^{(l)}_{qi}\sigma'(z_i^{(l)})\\
+\epsilon_i^{(L)} & = (a^{(L)}_i - y_i)\sigma'(z^{(L)}_i)
+\end{align}
+$$
+
+### Future Notes
+It seems worth adding the regularization described in  the [UFDL Notes](http://ufldl.stanford.edu/wiki/index.php/Backpropagation_Algorithm).  It also sounds like more sophisticated conjugate gradient or BFGS aren't worth pursing for now  [LeCun et. al, Efficient Backprop](http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf).
+
+
