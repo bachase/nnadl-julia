@@ -54,10 +54,10 @@ function backpropagate(n::NeuralNet.Network, input, output)
   dBias = cell(size(n.bias,1))
   
   dBias[end] = (a[end] - output) .* dsigmoid(z[end])
-  dWeights[end] = a[end-1] * dBias[end]'
+  dWeights[end] = dBias[end] * a[end-1]'
   for idx=size(dBias,1)-1:-1:1
-    dBias[idx] = (transpose(n.weights[idx+1])*dBias[idx+1]) .* dsigmoid(z[idx+1])
-    dWeights[idx] = a[idx-1] * dBias[idx]'
+    dBias[idx] = (n.weights[idx+1]' * dBias[idx+1]) .* dsigmoid(z[idx])
+    dWeights[idx] = dBias[idx] * a[idx]'
   end
   (dBias,dWeights)
 end
