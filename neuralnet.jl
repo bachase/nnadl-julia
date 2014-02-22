@@ -32,7 +32,7 @@ function feedforward(n::Network, input)
   #   a[i+1] = sigmoid(w[i] * a[i] + b[i])
   a = input
   for (w,b) in zip(n.weights, n.bias)
-	a = sigmoid( w * a + b )
+	a = sigmoid( w * a .+ b )
   end
   a
 end
@@ -43,32 +43,56 @@ function backpropagate(n::NeuralNet.Network, input, output)
   # z[l] are the sigmoid inputs
   z = cell(size(n.bias,1))
   
+  num_examples = size(input,2)
+
   a[1] = input
   # forward propagate
   for idx=1:length(z)
-    z[idx] = n.weights[idx] * a[idx] + n.bias[idx]
+    z[idx] = n.weights[idx] * a[idx] .+ n.bias[idx]
     a[idx+1] = sigmoid( z[idx] )
   end
+
   # backward propogate
   dWeights = cell(size(n.weights,1))
   dBias = cell(size(n.bias,1))
-  
-  dBias[end] = (a[end] - output) .* dsigmoid(z[end])
+
+     
+  dBias[end] = (a[end] .- output) .* dsigmoid(z[end])
+  println(size(dBias[end]))
   dWeights[end] = dBias[end] * a[end-1]'
   for idx=size(dBias,1)-1:-1:1
     dBias[idx] = (n.weights[idx+1]' * dBias[idx+1]) .* dsigmoid(z[idx])
     dWeights[idx] = dBias[idx] * a[idx]'
   end
+  dBias = map(m -> 1/num_examples * sum(m,2), dBias)
+  dWeights = map(m -> 1/num_examples * m, dWeights)
   (dBias,dWeights)
 end
 
-function train(n::Network, data, labels)
+function train(n::Network, data, outputs, batch_size, epochs, eta)
    # train the network via backpropagation on training set defined
    # by data and labels
+   # data is num_features * num_samples
+   # outputs num_outputs  * num_samples
    
-   #1 repeat until done
-   #2 select random subset
-   #3 run back-propagation
+   num_samples = size(data,2)
+   @assert size(data,2) == size(outputs,2)
+   idx = [ x for x in 1:num_samples ]
+   batch_offsets = vcat([x for x in 1:batch_size:num_samples],[num_samples+1])
+
+   for epoch in 1:epochs
+       println(epoch)
+       shuffle!(idx)
+       for bid in 1:len(batch_offsets)-1
+           batch_ids = idx[batch_offsets[bid]:(batch_offsets[bid+1]-1)]
+	   (dBias, dWeights) = backpropagate(n, data[:,batch_ids], outputs[:,batch_ids])
+           for l in 1:len(n.layers)-1
+               n.weights[idx] = n.weights[idx] - eta * dWeights[idx]
+               n.bias[idx] = n.weights[idx] - eta * dBias[idx]
+           end
+       end
+   end
+   n
 end
 
 end
