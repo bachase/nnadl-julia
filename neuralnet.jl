@@ -83,12 +83,12 @@ function train(n::Network, data, outputs, batch_size, epochs, eta)
    for epoch in 1:epochs
        println(epoch)
        shuffle!(idx)
-       for bid in 1:len(batch_offsets)-1
+       for bid in 1:length(batch_offsets)-1
            batch_ids = idx[batch_offsets[bid]:(batch_offsets[bid+1]-1)]
 	   (dBias, dWeights) = backpropagate(n, data[:,batch_ids], outputs[:,batch_ids])
-           for l in 1:len(n.layers)-1
-               n.weights[idx] = n.weights[idx] - eta * dWeights[idx]
-               n.bias[idx] = n.weights[idx] - eta * dBias[idx]
+           for l in 1:length(n.layers)-1
+               n.weights[l] = n.weights[l] - eta * dWeights[l]
+               n.bias[l] = n.weights[l] - eta * dBias[l]
            end
        end
    end
