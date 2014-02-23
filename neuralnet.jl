@@ -58,7 +58,6 @@ function backpropagate(n::NeuralNet.Network, input, output)
 
      
   dBias[end] = (a[end] .- output) .* dsigmoid(z[end])
-  println(size(dBias[end]))
   dWeights[end] = dBias[end] * a[end-1]'
   for idx=size(dBias,1)-1:-1:1
     dBias[idx] = (n.weights[idx+1]' * dBias[idx+1]) .* dsigmoid(z[idx])
@@ -69,7 +68,7 @@ function backpropagate(n::NeuralNet.Network, input, output)
   (dBias,dWeights)
 end
 
-function train(n::Network, data, outputs, batch_size, epochs, eta)
+function train(n::Network, data, outputs, batch_size, epochs, eta, callback)
    # train the network via backpropagation on training set defined
    # by data and labels
    # data is num_features * num_samples
@@ -79,18 +78,18 @@ function train(n::Network, data, outputs, batch_size, epochs, eta)
    @assert size(data,2) == size(outputs,2)
    idx = [ x for x in 1:num_samples ]
    batch_offsets = vcat([x for x in 1:batch_size:num_samples],[num_samples+1])
-
    for epoch in 1:epochs
-       println(epoch)
+       @printf("Epoch %d ",epoch)
        shuffle!(idx)
        for bid in 1:length(batch_offsets)-1
            batch_ids = idx[batch_offsets[bid]:(batch_offsets[bid+1]-1)]
-	   (dBias, dWeights) = backpropagate(n, data[:,batch_ids], outputs[:,batch_ids])
-           for l in 1:length(n.layers)-1
-               n.weights[l] = n.weights[l] - eta * dWeights[l]
-               n.bias[l] = n.weights[l] - eta * dBias[l]
+	       (dBias, dWeights) = backpropagate(n, data[:,batch_ids], outputs[:,batch_ids])
+           for layer in 1:length(n.layers)-1
+               n.weights[layer] = n.weights[layer] - eta * dWeights[layer]
+               n.bias[layer] = n.bias[layer] - eta * squeeze(dBias[layer],2)
            end
        end
+       callback(epoch, n)
    end
    n
 end
