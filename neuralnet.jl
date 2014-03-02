@@ -1,6 +1,8 @@
 module NeuralNet
 
 export Network, feedforward, backpropagate, cost
+
+using NumericExtensions
 	
 type Network
 	# array of layer sizes, layers[1] is the size of the input layer
@@ -20,13 +22,15 @@ type Network
 	end
 end
 
-function sigmoid(z)
-    1./(1 + exp(-z))
+function sigmoid(z::Real)
+    one(z)/(one(z) + exp(-z))
 end
+@vectorize_1arg Real sigmoid
 
-function dsigmoid(z)
-    sigmoid(z) .* (1-sigmoid(z))
+function dsigmoid(z::Real)
+    exp(-z)/((one(z)+exp(-z))*(one(z)+exp(-z)))
 end
+@vectorize_1arg Real dsigmoid
 
 function feedforward(n::Network, input)
   # run the input through the neural network
