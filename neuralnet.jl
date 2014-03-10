@@ -2,8 +2,6 @@ module NeuralNet
 
 export Network, feedforward, backpropagate, cost
 
-using NumericExtensions
-	
 type Network
 	# array of layer sizes, layers[1] is the size of the input layer
 	layers::Array{Int64,1}
@@ -37,8 +35,8 @@ function feedforward(n::Network, input)
   # i.e., if a[1] = input then iterate
   #   a[i+1] = sigmoid(w[i] * a[i] + b[i])
   a = input
-  for (w,b) in zip(n.weights, n.bias)
-	a = sigmoid( w * a .+ b )
+  for idx in 1:size(n.bias,1)
+	a = sigmoid( n.weights[idx] * a .+ n.bias[idx] )
   end
   a
 end
@@ -93,8 +91,10 @@ function backpropagate(n::NeuralNet.Network, input, output)
   end
   
   # normalize and sum out examples dimension
-  dBias = map(m -> 1/num_examples * sum(m,2), dBias)
-  dWeights = map(m -> 1/num_examples * m, dWeights)
+  for idx in 1:length(dWeights)
+    dBias[idx] = 1/num_examples * sum(dBias[idx],2)
+    dWeights[idx] = 1/num_examples * dWeights[idx]
+  end
   (dBias,dWeights)
 end
 
@@ -102,7 +102,19 @@ function dummy_callback(epoch, n::Network)
 # do nothing
 end
 
-function train(n::Network, data, outputs, epochs = 10, batch_size = 1, eta = 0.95, lambda = 0, callback = dummy_callback)
+function update_weights!(weight_mat, f1, f2, dweight_mat)
+    for idx in 1:length(weight_mat)
+        weight_mat[idx] = f1 * weight_mat[idx] - f2 * dweight_mat[idx]
+    end
+end
+
+function update_bias!(bias, eta, dbias)
+    for idx in 1:length(bias)
+        bias[idx] = bias[idx] - eta * dbias[idx]
+    end
+end
+
+function train(n::Network, data, outputs, epochs = 10, batch_size = 1, eta = 0.95, lambda = 0., callback = dummy_callback)
    # Train the network via stochastic gradient descent on training set defined
    # by data and labels
    #
@@ -131,8 +143,10 @@ function train(n::Network, data, outputs, epochs = 10, batch_size = 1, eta = 0.9
            batch_ids = idx[batch_offsets[bid]:(batch_offsets[bid+1]-1)]
 	       (dBias, dWeights) = backpropagate(n, data[:,batch_ids], outputs[:,batch_ids])
            for layer in 1:length(n.layers)-1
-               n.weights[layer] = n.weights[layer] - eta * ( dWeights[layer] + lambda * n.weights[layer] )
-               n.bias[layer] = n.bias[layer] - eta * squeeze(dBias[layer],2)
+               #n.weights[layer] = ( 1 - eta .* lambda) .* n.weights[layer] - eta .* dWeights[layer] 
+               update_weights!(n.weights[layer], 1-eta * lambda, eta, dWeights[layer])
+               #n.bias[layer] = n.bias[layer] - eta * squeeze(dBias[layer],2)
+               update_bias!(n.bias[layer],-eta, dBias[layer])
            end
        end
        callback(epoch, n)
