@@ -4,10 +4,13 @@ TODO:
 2. Why doesn't the AST figure this out?
 3. Temporaries? Use !, any basic BLAS
 4. Switch to looping over examples?
+5. Check on impact of GC . . if it is non-negligible, share memory across calls to backprop
 
-Devectorize
-NumericExtensions
-http://julialang.org/blog/2013/09/fast-numeric/
+Refs:
+
+- Devectorize
+- NumericExtensions
+- http://julialang.org/blog/2013/09/fast-numeric/
 
 Done:
 
